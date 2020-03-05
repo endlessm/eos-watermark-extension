@@ -4,5 +4,5 @@
 "description": "Add a watermark to the desktop",
 "settings-schema": "@settings_schema@",
 "shell-version": ["@shell_version@"],
-"url": "https://github.com/endlessm/watermark-extension"
+"url": "https://github.com/endlessm/eos-watermark-extension"
 }
