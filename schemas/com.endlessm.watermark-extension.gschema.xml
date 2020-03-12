@@ -15,7 +15,7 @@
       <description>The full watermark file path</description>
     </key>
     <key name="watermark-position"
-         enum="org.endlessm.watermark-extension.Position">
+         enum="com.endlessm.watermark-extension.Position">
       <default>'bottom-right'</default>
       <summary>Watermark position</summary>
       <description>
