@@ -22,6 +22,7 @@ const Background = imports.ui.background;
 const Config = imports.misc.config;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Layout = imports.ui.layout;
+const Monitor = imports.ui.monitor;
 const Main = imports.ui.main;
 
 var IconContainer = GObject.registerClass(
@@ -101,7 +102,7 @@ var Watermark = GObject.registerClass({
         this.connect('notify::brightness',
             this._updateOpacity.bind(this));
 
-        let constraint = new Layout.MonitorConstraint({
+        let constraint = new Monitor.MonitorConstraint({
             index: this._monitorIndex,
             work_area: true,
         });
