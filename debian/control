@@ -14,8 +14,8 @@ Vcs-Git: https://github.com/endlessm/eos-watermark-extension.git
 Package: eos-watermark-extension
 Architecture: all
 Depends:
- gnome-shell (>= 3.33),
- gnome-shell (<< 3.35),
+ gnome-shell (>= 3.35),
+ gnome-shell (<< 3.37),
  ${shlibs:Depends},
  ${misc:Depends}
 Description: Endless OS watermark extension for GNOME Shell
