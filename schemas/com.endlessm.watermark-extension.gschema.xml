@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="watermark-extension">
-  <enum id="com.endlessm.watermark-extension.Position">
+  <enum id="org.gnome.shell.watermark.Position">
     <value nick="center" value="0"/>
     <value nick="bottom-left" value="1"/>
     <value nick="bottom-center" value="2"/>
@@ -15,7 +15,7 @@
       <description>The full watermark file path</description>
     </key>
     <key name="watermark-position"
-         enum="com.endlessm.watermark-extension.Position">
+         enum="org.gnome.shell.watermark.Position">
       <default>'bottom-right'</default>
       <summary>Watermark position</summary>
       <description>
