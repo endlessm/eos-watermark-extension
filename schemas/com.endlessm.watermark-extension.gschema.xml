@@ -7,7 +7,7 @@
     <value nick="bottom-right" value="3" />
   </enum>
 
-  <schema path="/org/gnome/shell/"
+  <schema path="/org/gnome/shell/watermark/"
           id="com.endlessm.watermark-extension">
     <key type="s" name="watermark-file">
       <default>''</default>
