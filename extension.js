@@ -108,7 +108,7 @@ var Watermark = GObject.registerClass({
 
         this._bin = new IconContainer({ x_expand: true, y_expand: true });
         this.add_actor(this._bin);
-        this._bin.connect('notify::resource-scale',
+        this._bin.connect('resource-scale-changed',
             this._updateWatermarkTexture.bind(this));
 
         this._updateWatermark();
@@ -177,15 +177,12 @@ var Watermark = GObject.registerClass({
             this._icon.destroy();
         this._icon = null;
 
-        const [valid, resourceScale] = this._bin.get_resource_scale();
-        if (!valid)
-            return;
-
         const key = this._settings.settings_schema.get_key('watermark-size');
         const [, range] = key.get_range().deep_unpack();
         const [, max] = range.deep_unpack();
         const width = this._getWidthForRelativeSize(max);
 
+        const resourceScale = this._bin.get_resource_scale();
         const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         this._icon = this._textureCache.load_file_async(this._watermarkFile, width, -1, scaleFactor, resourceScale);
         this._icon.connect('notify::content',
