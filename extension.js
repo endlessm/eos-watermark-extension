@@ -101,11 +101,10 @@ var Watermark = GObject.registerClass({
         this.connect('notify::brightness',
             this._updateOpacity.bind(this));
 
-        let constraint = new Layout.MonitorConstraint({
+        this.add_constraint(new Layout.MonitorConstraint({
             index: this._monitorIndex,
             work_area: true,
-        });
-        this.add_constraint(constraint);
+        }));
 
         this._bin = new IconContainer({ x_expand: true, y_expand: true });
         this.add_actor(this._bin);
