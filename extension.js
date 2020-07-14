@@ -38,12 +38,12 @@ class IconContainer extends St.Widget {
     }
 
     vfunc_get_preferred_width(forHeight) {
-        let width = super.vfunc_get_preferred_width(forHeight);
+        const width = super.vfunc_get_preferred_width(forHeight);
         return width.map(w => w * this.scale_x);
     }
 
     vfunc_get_preferred_height(forWidth) {
-        let height = super.vfunc_get_preferred_height(forWidth);
+        const height = super.vfunc_get_preferred_height(forWidth);
         return height.map(h => h * this.scale_y);
     }
 });
@@ -128,7 +128,7 @@ var Watermark = GObject.registerClass({
         const WATERMARK_CUSTOM_BRANDING_FILE = `${Config.LOCALSTATEDIR}/lib/eos-image-defaults/branding/gnome-shell.conf`;
 
         try {
-            let keyfile = new GLib.KeyFile();
+            const keyfile = new GLib.KeyFile();
             keyfile.load_from_file(WATERMARK_CUSTOM_BRANDING_FILE, GLib.KeyFileFlags.NONE);
             return keyfile.get_string('Watermark', 'logo');
         } catch (e) {
@@ -138,7 +138,7 @@ var Watermark = GObject.registerClass({
 
     _updateWatermark() {
         let filename = this._settings.get_string('watermark-file');
-        let brandingFile = this._loadBrandingFile();
+        const brandingFile = this._loadBrandingFile();
 
         // If there's no GSettings file, but there is a custom file, use
         // the custom file instead and make sure it is visible
@@ -149,7 +149,7 @@ var Watermark = GObject.registerClass({
             this._forceWatermarkVisible = false;
         }
 
-        let file = Gio.File.new_for_commandline_arg(filename);
+        const file = Gio.File.new_for_commandline_arg(filename);
         if (this._watermarkFile && this._watermarkFile.equal(file))
             return;
 
@@ -168,7 +168,7 @@ var Watermark = GObject.registerClass({
     }
 
     _getWidthForRelativeSize(size) {
-        let { width } = this._getWorkArea();
+        const { width } = this._getWorkArea();
         return width * size / 100;
     }
 
@@ -177,16 +177,16 @@ var Watermark = GObject.registerClass({
             this._icon.destroy();
         this._icon = null;
 
-        let [valid, resourceScale] = this._bin.get_resource_scale();
+        const [valid, resourceScale] = this._bin.get_resource_scale();
         if (!valid)
             return;
 
-        let key = this._settings.settings_schema.get_key('watermark-size');
-        let [, range] = key.get_range().deep_unpack();
-        let [, max] = range.deep_unpack();
-        let width = this._getWidthForRelativeSize(max);
+        const key = this._settings.settings_schema.get_key('watermark-size');
+        const [, range] = key.get_range().deep_unpack();
+        const [, max] = range.deep_unpack();
+        const width = this._getWidthForRelativeSize(max);
 
-        let scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+        const scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
         this._icon = this._textureCache.load_file_async(this._watermarkFile, width, -1, scaleFactor, resourceScale);
         this._icon.connect('notify::content',
             this._updateScale.bind(this));
@@ -197,9 +197,9 @@ var Watermark = GObject.registerClass({
         if (!this._icon || this._icon.width === 0)
             return;
 
-        let size = this._settings.get_double('watermark-size');
-        let width = this._getWidthForRelativeSize(size);
-        let scale = width / this._icon.width;
+        const size = this._settings.get_double('watermark-size');
+        const width = this._getWidthForRelativeSize(size);
+        const scale = width / this._icon.width;
         this._bin.set_scale(scale, scale);
     }
 
@@ -228,14 +228,14 @@ var Watermark = GObject.registerClass({
     }
 
     _updateBorder() {
-        let border = this._settings.get_uint('watermark-border');
+        const border = this._settings.get_uint('watermark-border');
         this.style = 'padding: %dpx;'.format(border);
     }
 
     _updateVisibility() {
-        let { background } = this._bgManager.backgroundActor;
-        let defaultUri = background._settings.get_default_value('picture-uri');
-        let file = Gio.File.new_for_commandline_arg(defaultUri.deep_unpack());
+        const { background } = this._bgManager.backgroundActor;
+        const defaultUri = background._settings.get_default_value('picture-uri');
+        const file = Gio.File.new_for_commandline_arg(defaultUri.deep_unpack());
 
         let visible;
         if (this._forceWatermarkVisible ||
@@ -299,7 +299,7 @@ class Extension {
     _addWatermark() {
         this._destroyWatermark();
         this._forEachBackgroundManager(bgManager => {
-            let watermark = new Watermark(bgManager);
+            const watermark = new Watermark(bgManager);
             watermark.connect('destroy', () => {
                 this._watermarks.delete(watermark);
             });
