@@ -15,7 +15,7 @@ Package: eos-watermark-extension
 Architecture: all
 Depends:
  gnome-shell (>= 3.35),
- gnome-shell (<< 3.37),
+ gnome-shell (>= 3.37.3),
  ${shlibs:Depends},
  ${misc:Depends}
 Description: Endless OS watermark extension for GNOME Shell
