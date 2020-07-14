@@ -48,22 +48,11 @@ class IconContainer extends St.Widget {
     }
 });
 
-var Watermark = GObject.registerClass({
-    Properties: {
-        // For compatibility with Meta.BackgroundActor
-        'brightness': GObject.ParamSpec.double(
-            'brightness', 'brightness', 'brightness',
-            GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-            0, 1, 1),
-        'vignette-sharpness': GObject.ParamSpec.double(
-            'vignette-sharpness', 'vignette-sharpness', 'vignette-sharpness',
-            GObject.ParamFlags.READWRITE | GObject.ParamFlags.CONSTRUCT,
-            0, 1, 0),
-    },
-}, class Watermark extends St.Widget {
-    _init(bgManager) {
-        this._bgManager = bgManager;
-        this._monitorIndex = bgManager._monitorIndex;
+var Watermark = GObject.registerClass(
+class Watermark extends St.Widget {
+    _init(backgroundActor) {
+        this._backgroundActor = backgroundActor;
+        this._monitorIndex = this._backgroundActor.monitor;
 
         this._watermarkFile = null;
         this._forceWatermarkVisible = false;
@@ -94,11 +83,11 @@ var Watermark = GObject.registerClass({
             layout_manager: new Clutter.BinLayout(),
             opacity: 0,
         });
-        bgManager._container.add_actor(this);
+        this._backgroundActor.add_child(this);
 
         this.connect('destroy', this._onDestroy.bind(this));
 
-        this.connect('notify::brightness',
+        this._backgroundActor.content.connect('notify::brightness',
             this._updateOpacity.bind(this));
 
         this.add_constraint(new Layout.MonitorConstraint({
@@ -115,12 +104,6 @@ var Watermark = GObject.registerClass({
         this._updatePosition();
         this._updateBorder();
         this._updateOpacity();
-
-        this._bgDestroyedId = bgManager.backgroundActor.connect('destroy',
-            this._backgroundDestroyed.bind(this));
-
-        this._bgChangedId = bgManager.connect('changed',
-            this._updateVisibility.bind(this));
         this._updateVisibility();
     }
 
@@ -159,8 +142,10 @@ var Watermark = GObject.registerClass({
     }
 
     _updateOpacity() {
+        const brightness = this._backgroundActor.content.vignette
+            ? this._backgroundActor.content.brightness : 1.0;
         this._bin.opacity =
-            this._settings.get_uint('watermark-opacity') * this.brightness;
+            this._settings.get_uint('watermark-opacity') * brightness;
     }
 
     _getWorkArea() {
@@ -230,7 +215,7 @@ var Watermark = GObject.registerClass({
     }
 
     _updateVisibility() {
-        const { background } = this._bgManager.backgroundActor;
+        const { background } = this._backgroundActor.content;
         const defaultUri = background._settings.get_default_value('picture-uri');
         const file = Gio.File.new_for_commandline_arg(defaultUri.deep_unpack());
 
@@ -250,31 +235,9 @@ var Watermark = GObject.registerClass({
         });
     }
 
-    _backgroundDestroyed() {
-        this._bgDestroyedId = 0;
-
-        if (this._bgManager._backgroundSource) { // background swapped
-            this._bgDestroyedId =
-                this._bgManager.backgroundActor.connect('destroy',
-                    this._backgroundDestroyed.bind(this));
-        } else { // bgManager destroyed
-            this.destroy();
-        }
-    }
-
     _onDestroy() {
         this._settings.run_dispose();
         this._settings = null;
-
-        if (this._bgDestroyedId)
-            this._bgManager.backgroundActor.disconnect(this._bgDestroyedId);
-        this._bgDestroyedId = 0;
-
-        if (this._bgChangedId)
-            this._bgManager.disconnect(this._bgChangedId);
-        this._bgChangedId = 0;
-
-        this._bgManager = null;
 
         this._watermarkFile = null;
     }
@@ -283,49 +246,30 @@ var Watermark = GObject.registerClass({
 
 class Extension {
     constructor() {
-        this._monitorsChangedId = 0;
-        this._startupPreparedId = 0;
-        this._watermarks = new Set();
+        this._bgManagerProto = Background.BackgroundManager.prototype;
+        this._createBackgroundOrig = this._bgManagerProto._createBackgroundActor;
     }
 
-    _forEachBackgroundManager(func) {
-        Main.overview._bgManagers.forEach(func);
-        Main.layoutManager._bgManagers.forEach(func);
-    }
-
-    _addWatermark() {
-        this._destroyWatermark();
-        this._forEachBackgroundManager(bgManager => {
-            const watermark = new Watermark(bgManager);
-            watermark.connect('destroy', () => {
-                this._watermarks.delete(watermark);
-            });
-            this._watermarks.add(watermark);
-        });
-    }
-
-    _destroyWatermark() {
-        this._watermarks.forEach(l => l.destroy());
+    _reloadBackgrounds() {
+        Main.layoutManager._updateBackgrounds();
+        Main.overview._updateBackgrounds();
     }
 
     enable() {
-        this._monitorsChangedId =
-            Main.layoutManager.connect('monitors-changed', this._addWatermark.bind(this));
-        this._startupPreparedId =
-            Main.layoutManager.connect('startup-prepared', this._addWatermark.bind(this));
-        this._addWatermark();
+        const { _createBackgroundOrig } = this;
+
+        this._bgManagerProto._createBackgroundActor = function () {
+            const backgroundActor = _createBackgroundOrig.call(this);
+            const logo_ = new Watermark(backgroundActor);
+
+            return backgroundActor;
+        };
+        this._reloadBackgrounds();
     }
 
     disable() {
-        if (this._monitorsChangedId)
-            Main.layoutManager.disconnect(this._monitorsChangedId);
-        this._monitorsChangedId = 0;
-
-        if (this._startupPreparedId)
-            Main.layoutManager.disconnect(this._startupPreparedId);
-        this._startupPreparedId = 0;
-
-        this._destroyWatermark();
+        this._bgManagerProto._createBackgroundActor = this._createBackgroundOrig;
+        this._reloadBackgrounds();
     }
 }
 
