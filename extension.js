@@ -252,7 +252,6 @@ class Extension {
 
     _reloadBackgrounds() {
         Main.layoutManager._updateBackgrounds();
-        Main.overview._updateBackgrounds();
     }
 
     enable() {
